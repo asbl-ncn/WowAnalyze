@@ -1,0 +1,66 @@
+name: Precompute reference profiles
+
+# Builds Reference Profiles from the Top Parses and commits the JSON back to the repo.
+# The repo is the database — see docs/ARCHITECTURE.md.
+
+on:
+  schedule:
+    # Weekly, Tuesday 12:00 UTC (after weekly reset settles). Cron is UTC.
+    - cron: "0 12 * * 2"
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: "Spec slug (e.g. havoc). Leave blank to run the configured set."
+        required: false
+      boss:
+        description: "Encounter id (from --list-zones)."
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precompute
+  cancel-in-progress: false
+
+jobs:
+  precompute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Build reference profiles
+        env:
+          WCL_CLIENT_ID: ${{ secrets.WCL_CLIENT_ID }}
+          WCL_CLIENT_SECRET: ${{ secrets.WCL_CLIENT_SECRET }}
+        run: |
+          # TODO: iterate the configured (spec, boss) seeds for the current tier.
+          # Placeholder single run using workflow inputs when provided.
+          if [ -n "${{ github.event.inputs.spec }}" ] && [ -n "${{ github.event.inputs.boss }}" ]; then
+            python -m scripts.precompute --spec "${{ github.event.inputs.spec }}" \
+              --difficulty mythic --boss "${{ github.event.inputs.boss }}"
+          else
+            echo "No seeds configured yet — scaffold. Wire the seed list into precompute."
+          fi
+
+      - name: Commit refreshed profiles
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain data/reference)" ]; then
+            git add data/reference
+            git commit -m "chore(reference): refresh reference profiles"
+            git push
+          else
+            echo "No reference changes to commit."
+          fi
