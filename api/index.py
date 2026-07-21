@@ -25,6 +25,7 @@ from wowanalyze.models import (  # noqa: E402
     Target,
 )
 from wowanalyze.wcl import WCLClient, WCLError  # noqa: E402
+from wowanalyze.wcl.report import fetch_report_summary  # noqa: E402
 
 app = FastAPI(title="WowAnalyze", version="0.1.0")
 
@@ -39,17 +40,14 @@ async def health() -> dict[str, object]:
 
 @app.get("/api/report/{code}", response_model=ReportSummary)
 async def get_report(code: str) -> ReportSummary:
-    """List a report's Pulls and Actors so the frontend can offer pickers.
-
-    TODO(wcl): run REPORT_SUMMARY, map the response into ReportSummary.
-    """
-    _ = WCLClient()  # constructed here so a missing-credentials error surfaces cleanly
+    """List a report's Pulls and Actors so the frontend can offer pickers."""
     try:
-        raise HTTPException(
-            status_code=501,
-            detail="Report browsing not implemented yet — scaffold only.",
-        )
-    except WCLError as exc:  # pragma: no cover - defensive
+        return await fetch_report_summary(code, WCLClient())
+    except ValueError as exc:
+        # Report not found / not accessible.
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except WCLError as exc:
+        # WCL rejected the query, or credentials are missing/invalid.
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 

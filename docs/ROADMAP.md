@@ -13,8 +13,9 @@ The vertical slice: paste a report, pick your Actor + Pull, get ranked Findings.
 
 - 🟢 Repo scaffold, engine package, docs, CI workflow stub
 - 🟢 `Target` data model and multi-Target-ready orchestration
-- 🟡 WCL client — OAuth client-credentials + GraphQL (`wowanalyze/wcl/`)
-- 🟡 `/api/report/{code}` — list Fights + Actors so the UI can offer pickers
+- 🟢 WCL client — OAuth client-credentials + GraphQL (`wowanalyze/wcl/`)
+- 🟢 `/api/report/{code}` — list Fights + Actors so the UI can offer pickers
+      (live fetch + pure mapper + tests; needs live creds to validate end-to-end)
 - ⚪ Precompute: pull Top Parses, cluster by **Build**, aggregate → Reference Profiles
 - ⚪ **Dimension 1 — Cooldowns**: expected major-CD cast counts + timing vs profile
 - ⚪ **Dimension 2 — Rotation**: key-ability CPM, activity/GCD uptime, resource overcap
