@@ -23,9 +23,10 @@ The vertical slice: paste a report, pick your Actor + Pull, get ranked Findings.
 - ⚪ Findings UI: ranked list by `impact_score`, grouped by Dimension
 - ⚪ Thin **Guardrail** layer (start with: exclude add-padding, proc-window sanity)
 
-**Seed target for validation:** the maintainer's own DPS spec + one sample Mythic
-report. Boss/encounter IDs for the current tier are discovered via
-`python -m scripts.precompute --list-zones` (do not hard-code a tier).
+**Seed targets for validation:** the maintainer's mains — **Elemental Shaman**
+(`elemental`) and **Shadow Priest** (`shadow`) — configured in `scripts/seeds.py`
+alongside a real validation report. Boss/encounter IDs for the current tier are
+discovered via `python -m scripts.precompute --list-zones` (do not hard-code a tier).
 
 **Definition of done for v1:** for the seeded spec+boss, paste a real report → get
 Findings that a competent player agrees with when they eyeball the log.

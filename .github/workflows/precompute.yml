@@ -44,13 +44,12 @@ jobs:
           WCL_CLIENT_ID: ${{ secrets.WCL_CLIENT_ID }}
           WCL_CLIENT_SECRET: ${{ secrets.WCL_CLIENT_SECRET }}
         run: |
-          # TODO: iterate the configured (spec, boss) seeds for the current tier.
-          # Placeholder single run using workflow inputs when provided.
+          # A specific spec+boss from workflow_dispatch inputs, else the seed set.
           if [ -n "${{ github.event.inputs.spec }}" ] && [ -n "${{ github.event.inputs.boss }}" ]; then
             python -m scripts.precompute --spec "${{ github.event.inputs.spec }}" \
               --difficulty mythic --boss "${{ github.event.inputs.boss }}"
           else
-            echo "No seeds configured yet — scaffold. Wire the seed list into precompute."
+            python -m scripts.precompute --seeds
           fi
 
       - name: Commit refreshed profiles

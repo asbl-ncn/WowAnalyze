@@ -55,6 +55,24 @@ async def build_reference(spec: str, difficulty: Difficulty, boss_id: int) -> No
     )
 
 
+async def build_seeds() -> None:
+    """Build every (SEED_SPEC x CURRENT_TIER_ENCOUNTER) combination."""
+    from scripts.seeds import (
+        CURRENT_TIER_ENCOUNTERS,
+        DEFAULT_DIFFICULTY,
+        SEED_SPECS,
+    )
+
+    if not CURRENT_TIER_ENCOUNTERS:
+        raise SystemExit(
+            "No encounters configured for this tier. Run `--list-zones`, then fill in "
+            "CURRENT_TIER_ENCOUNTERS in scripts/seeds.py."
+        )
+    for spec in SEED_SPECS:
+        for boss_id in CURRENT_TIER_ENCOUNTERS:
+            await build_reference(spec, DEFAULT_DIFFICULTY, boss_id)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build WowAnalyze Reference Profiles.")
     parser.add_argument(
@@ -62,7 +80,12 @@ def main() -> None:
         action="store_true",
         help="Print current zones/encounters so you can find boss ids for this tier.",
     )
-    parser.add_argument("--spec", help="Spec slug, e.g. 'havoc'.")
+    parser.add_argument(
+        "--seeds",
+        action="store_true",
+        help="Build the configured seed set (scripts/seeds.py). Used by CI.",
+    )
+    parser.add_argument("--spec", help="Spec slug, e.g. 'elemental'.")
     parser.add_argument(
         "--difficulty",
         type=Difficulty,
@@ -76,8 +99,12 @@ def main() -> None:
         asyncio.run(list_zones())
         return
 
+    if args.seeds:
+        asyncio.run(build_seeds())
+        return
+
     if not (args.spec and args.boss):
-        parser.error("provide --spec and --boss, or use --list-zones")
+        parser.error("provide --spec and --boss, use --seeds, or use --list-zones")
 
     asyncio.run(build_reference(args.spec, args.difficulty, args.boss))
 
