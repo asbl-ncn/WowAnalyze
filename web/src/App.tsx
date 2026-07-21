@@ -2,6 +2,7 @@ import { useState } from "react";
 import { analyze, fetchReport, parseReportCode } from "./api";
 import { FindingList } from "./components/FindingList";
 import { ObservedCasts } from "./components/ObservedCasts";
+import { SPECS_BY_CLASS, specSlug } from "./classSpecs";
 import type { ActorSummary, AnalysisResult, FightSummary, ReportSummary } from "./types";
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
   const [report, setReport] = useState<ReportSummary | null>(null);
   const [fight, setFight] = useState<FightSummary | null>(null);
   const [actor, setActor] = useState<ActorSummary | null>(null);
+  const [spec, setSpec] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,7 +45,7 @@ export default function App() {
             fight_id: fight.fight_id,
             actor_id: actor.actor_id,
             character_name: actor.name,
-            spec: actor.spec,
+            spec,
           },
         ]),
       );
@@ -59,6 +61,11 @@ export default function App() {
   const visibleActors =
     report && fight
       ? report.actors.filter((a) => fight.participant_ids.includes(a.actor_id))
+      : [];
+
+  const availableSpecs =
+    actor?.class_name && SPECS_BY_CLASS[actor.class_name]
+      ? SPECS_BY_CLASS[actor.class_name]
       : [];
 
   return (
@@ -96,6 +103,7 @@ export default function App() {
                 onChange={(e) => {
                   setFight(report.fights[Number(e.target.value)] ?? null);
                   setActor(null); // roster changes with the pull
+                  setSpec(null);
                 }}
                 defaultValue=""
               >
@@ -116,9 +124,10 @@ export default function App() {
                 value={
                   actor ? String(visibleActors.indexOf(actor)) : ""
                 }
-                onChange={(e) =>
-                  setActor(visibleActors[Number(e.target.value)] ?? null)
-                }
+                onChange={(e) => {
+                  setActor(visibleActors[Number(e.target.value)] ?? null);
+                  setSpec(null);
+                }}
                 disabled={!fight}
               >
                 <option value="" disabled>
@@ -128,6 +137,26 @@ export default function App() {
                   <option key={a.actor_id} value={i}>
                     {a.name}
                     {a.class_name ? ` – ${a.class_name}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Spec</label>
+              <select
+                value={spec ?? ""}
+                onChange={(e) => setSpec(e.target.value || null)}
+                disabled={!actor || availableSpecs.length === 0}
+              >
+                <option value="" disabled>
+                  {actor ? "Choose your spec…" : "Pick a character first"}
+                </option>
+                {availableSpecs.map((s) => (
+                  <option
+                    key={s}
+                    value={actor ? specSlug(actor.class_name ?? "", s) : s}
+                  >
+                    {s}
                   </option>
                 ))}
               </select>

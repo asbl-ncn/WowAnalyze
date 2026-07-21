@@ -18,7 +18,10 @@ from wowanalyze.models import (
     Target,
     TargetAnalysis,
 )
-from wowanalyze.reference.store import load_profile
+from wowanalyze.reference.store import PROVISIONAL_BUILD_KEY, load_profile
+
+# WCL raid difficulty ids.
+_DIFFICULTY_BY_ID = {3: Difficulty.normal, 4: Difficulty.heroic, 5: Difficulty.mythic}
 
 
 def analyze_actor_data(
@@ -57,13 +60,12 @@ async def analyze_targets(
         data = await fetch_actor_data(target)
 
         profile = None
-        if target.spec and data.detected_build_key:
-            # boss_id must come from the fight; resolved upstream and TODO-wired here.
+        if target.spec and data.boss_id:
             profile = load_profile(
                 spec=target.spec,
-                difficulty=difficulty,
-                boss_id=0,  # TODO: resolve encounter id for this fight
-                build_key=data.detected_build_key,
+                difficulty=_DIFFICULTY_BY_ID.get(data.difficulty_id) or difficulty,
+                boss_id=data.boss_id,
+                build_key=PROVISIONAL_BUILD_KEY,
             )
 
         analysis = TargetAnalysis(target=target)

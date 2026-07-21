@@ -47,17 +47,22 @@ query ListZones {
 """
 
 # Top-parse rankings for a spec on an encounter — the reference population.
-# TODO(reference): confirm the exact rankings field/args for the current API version
-# and add pagination; wire `specName`/`className` and `metric: dps`.
+# `characterRankings` is a JSON scalar: { rankings: [ { name, amount,
+# report: { code, fightID }, ... } ], hasMorePages, ... }.
 ENCOUNTER_RANKINGS = """
-query EncounterRankings($encounterId: Int!, $difficulty: Int!, $page: Int!) {
+query EncounterRankings(
+  $encounterId: Int!, $difficulty: Int!, $className: String!,
+  $specName: String!, $page: Int!
+) {
   worldData {
     encounter(id: $encounterId) {
       name
       characterRankings(
         difficulty: $difficulty
-        page: $page
+        className: $className
+        specName: $specName
         metric: dps
+        page: $page
       )
     }
   }
@@ -90,8 +95,27 @@ ACTOR_CASTS = """
 query ActorCasts($code: String!, $fightId: Int!, $sourceId: Int!) {
   reportData {
     report(code: $code) {
-      fights(fightIDs: [$fightId]) { startTime endTime }
+      fights(fightIDs: [$fightId]) {
+        startTime
+        endTime
+        encounterID
+        difficulty
+      }
       table(fightIDs: [$fightId], sourceID: $sourceId, dataType: Casts)
+    }
+  }
+}
+"""
+
+# Just a report's players (id + name) — for resolving a ranked parse's sourceID by
+# name. Lighter than REPORT_SUMMARY (no fights list).
+REPORT_ACTORS = """
+query ReportActors($code: String!) {
+  reportData {
+    report(code: $code) {
+      masterData {
+        actors(type: "Player") { id name }
+      }
     }
   }
 }

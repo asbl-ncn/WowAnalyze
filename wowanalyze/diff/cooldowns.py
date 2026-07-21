@@ -28,9 +28,11 @@ class CooldownDimension(DiffDimension):
             yours = float(data.cast_counts.get(ability, 0))
             expected = metric.median
 
-            # Whole missed casts of a major cooldown are the canonical Finding.
+            # Only flag when you're clearly low — below the top parses' 25th percentile
+            # (not merely under the median, where half the field sits by definition).
+            low_bar = metric.p25 if metric.p25 is not None else expected
             missed = expected - yours
-            if missed >= 1:
+            if yours < low_bar and missed >= 1:
                 severity = Severity.critical if missed >= 2 else Severity.major
                 findings.append(
                     Finding(

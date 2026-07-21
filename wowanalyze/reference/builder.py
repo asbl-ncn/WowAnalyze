@@ -57,8 +57,14 @@ def aggregate_cluster(
     metrics: list[ReferenceMetric] = []
 
     # Cast counts -> cooldowns/rotation metrics.
+    n = len(cluster_data)
     abilities = {a for d in cluster_data for a in d.cast_counts}
     for ability in sorted(abilities):
+        # Only trust an ability as "expected" if most top parses actually used it —
+        # drops one-off utility/consumable casts from becoming a false standard.
+        present = sum(1 for d in cluster_data if d.cast_counts.get(ability, 0) > 0)
+        if n and present * 2 < n:
+            continue
         med, p25, p75 = _median([float(d.cast_counts.get(ability, 0)) for d in cluster_data])
         metrics.append(
             ReferenceMetric(

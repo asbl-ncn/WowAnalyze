@@ -18,8 +18,11 @@ The vertical slice: paste a report, pick your Actor + Pull, get ranked Findings.
       (fight-scoped roster + class; validated live against a real report)
 - 🟡 `/api/analyze` — live per-Target casts fetch; returns **observed** casts even
       before a reference exists (Dimension 1 groundwork; diff activates once profiles land)
-- ⚪ Precompute: pull Top Parses, cluster by **Build**, aggregate → Reference Profiles
-- ⚪ **Dimension 1 — Cooldowns**: expected major-CD cast counts + timing vs profile
+- 🟡 Precompute: pull Top Parses → resolve sourceIDs → fetch casts → aggregate →
+      Reference Profile JSON. Single **provisional** blended cluster for now
+      (Build-Cluster segmentation still ⚪); `--dump-rankings` + `--top` to control cost.
+- 🟡 **Dimension 1 — Cooldowns**: flags casts below the top parses' 25th percentile.
+      Still treats every ability as a cast-count metric — major-CD tagging + guardrails ⚪
 - ⚪ **Dimension 2 — Rotation**: key-ability CPM, activity/GCD uptime, resource overcap
 - ⚪ **Dimension 3 — Uptime**: buff/debuff uptime you're responsible for
 - ⚪ **Dimension 4 — Survival**: defensive-CD usage, avoidable damage, deaths

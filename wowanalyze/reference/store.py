@@ -14,6 +14,10 @@ from pathlib import Path
 from wowanalyze.config import get_settings
 from wowanalyze.models import Difficulty, ReferenceProfile
 
+# Until Build-Cluster segmentation lands, a spec+boss has ONE blended profile under
+# this key. Both the precompute (save) and analyze (load) use it, so they always agree.
+PROVISIONAL_BUILD_KEY = "all"
+
 
 def profile_path(
     spec: str, difficulty: Difficulty, boss_id: int, build_key: str

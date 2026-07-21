@@ -22,9 +22,13 @@ def map_actor_casts(data: dict[str, Any]) -> ActorFightData:
 
     fights = report.get("fights") or []
     duration_ms = 0
+    boss_id = 0
+    difficulty_id: int | None = None
     if fights:
         f = fights[0]
         duration_ms = int((f.get("endTime") or 0) - (f.get("startTime") or 0))
+        boss_id = f.get("encounterID") or 0
+        difficulty_id = f.get("difficulty")
 
     cast_counts: dict[str, int] = {}
     table = report.get("table") or {}
@@ -35,7 +39,12 @@ def map_actor_casts(data: dict[str, Any]) -> ActorFightData:
         # In a Casts table, `total` is the number of casts of that ability.
         cast_counts[name] = int(entry.get("total") or 0)
 
-    return ActorFightData(duration_ms=duration_ms, cast_counts=cast_counts)
+    return ActorFightData(
+        duration_ms=duration_ms,
+        boss_id=boss_id,
+        difficulty_id=difficulty_id,
+        cast_counts=cast_counts,
+    )
 
 
 async def fetch_actor_fight_data(

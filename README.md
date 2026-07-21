@@ -52,9 +52,15 @@ cp .env.example .env                 # Windows: copy .env.example .env  — then
 # 4. run the API locally (use `python -m uvicorn` — more reliable on Windows PATH)
 python -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000
 
-# discover current-tier encounter IDs, then build reference profiles
+# discover current-tier encounter IDs (only when the tier changes)
 python -m scripts.precompute --list-zones
-python -m scripts.precompute --spec elemental --difficulty mythic --boss <encounterID>
+
+# confirm the rankings shape, then build a reference profile for one spec+boss
+python -m scripts.precompute --dump-rankings --spec shaman-elemental --boss 3177
+python -m scripts.precompute --spec shaman-elemental --boss 3177 --top 20
+
+# or build the whole configured seed set (scripts/seeds.py)
+python -m scripts.precompute --seeds --top 20
 ```
 
 > Windows note: if uvicorn fails with `WinError 10013` (socket access forbidden), the

@@ -18,6 +18,8 @@ class ActorFightData(BaseModel):
     """
 
     duration_ms: int
+    boss_id: int = 0
+    difficulty_id: int | None = None
     detected_build_key: str | None = None
     cast_counts: dict[str, int] = Field(default_factory=dict)
     buff_uptime_ms: dict[str, int] = Field(default_factory=dict)
