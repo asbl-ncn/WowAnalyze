@@ -15,7 +15,9 @@ The vertical slice: paste a report, pick your Actor + Pull, get ranked Findings.
 - 🟢 `Target` data model and multi-Target-ready orchestration
 - 🟢 WCL client — OAuth client-credentials + GraphQL (`wowanalyze/wcl/`)
 - 🟢 `/api/report/{code}` — list Fights + Actors so the UI can offer pickers
-      (live fetch + pure mapper + tests; needs live creds to validate end-to-end)
+      (fight-scoped roster + class; validated live against a real report)
+- 🟡 `/api/analyze` — live per-Target casts fetch; returns **observed** casts even
+      before a reference exists (Dimension 1 groundwork; diff activates once profiles land)
 - ⚪ Precompute: pull Top Parses, cluster by **Build**, aggregate → Reference Profiles
 - ⚪ **Dimension 1 — Cooldowns**: expected major-CD cast counts + timing vs profile
 - ⚪ **Dimension 2 — Rotation**: key-ability CPM, activity/GCD uptime, resource overcap

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { analyze, fetchReport, parseReportCode } from "./api";
 import { FindingList } from "./components/FindingList";
+import { ObservedCasts } from "./components/ObservedCasts";
 import type { ActorSummary, AnalysisResult, FightSummary, ReportSummary } from "./types";
 
 export default function App() {
@@ -143,9 +144,11 @@ export default function App() {
       {result?.analyses.map((a, i) => (
         <section className="card" key={i}>
           <h2>
-            {a.target.character_name ?? "Player"} — {a.boss_name ?? "?"}
+            {a.target.character_name ?? "Player"} —{" "}
+            {a.boss_name ?? fight?.boss_name ?? "?"}
             {a.build ? ` · ${a.build.label}` : ""}
           </h2>
+          {a.observed && <ObservedCasts observed={a.observed} />}
           <FindingList findings={a.findings} />
         </section>
       ))}

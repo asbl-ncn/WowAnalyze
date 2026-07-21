@@ -49,10 +49,16 @@ export interface Finding {
   impact_score: number;
 }
 
+export interface ObservedPlay {
+  duration_ms: number;
+  cast_counts: Record<string, number>;
+}
+
 export interface TargetAnalysis {
   target: Target;
   boss_name?: string | null;
   build?: { key: string; label: string } | null;
+  observed?: ObservedPlay | null;
   findings: Finding[];
 }
 

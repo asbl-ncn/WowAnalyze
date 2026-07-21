@@ -25,6 +25,7 @@ from wowanalyze.models import (  # noqa: E402
     Target,
 )
 from wowanalyze.wcl import WCLClient, WCLError  # noqa: E402
+from wowanalyze.wcl.actor import fetch_actor_fight_data  # noqa: E402
 from wowanalyze.wcl.report import fetch_report_summary  # noqa: E402
 
 app = FastAPI(title="WowAnalyze", version="0.1.0")
@@ -65,15 +66,16 @@ async def analyze(req: AnalyzeRequest) -> AnalysisResult:
     client = WCLClient()
 
     async def fetch_actor_data(target: Target):
-        # TODO(wcl): pull ACTOR_TABLE for casts/buffs/damage-taken, detect the build,
-        # and map into ActorFightData. Stubbed until the WCL mapping lands.
-        raise HTTPException(
-            status_code=501,
-            detail="Live analysis not implemented yet — scaffold only.",
+        # Casts wired now; buffs/debuffs/deaths follow as later Dimensions land.
+        return await fetch_actor_fight_data(
+            target.report_code, target.fight_id, target.actor_id, client
         )
 
-    return await analyze_targets(
-        req.targets,
-        fetch_actor_data=fetch_actor_data,
-        difficulty=req.difficulty,
-    )
+    try:
+        return await analyze_targets(
+            req.targets,
+            fetch_actor_data=fetch_actor_data,
+            difficulty=req.difficulty,
+        )
+    except WCLError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

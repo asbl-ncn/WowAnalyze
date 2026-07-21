@@ -165,3 +165,38 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+.observed {
+  margin-bottom: 1.25rem;
+}
+
+.observed h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+table.casts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table.casts th,
+table.casts td {
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+table.casts th:nth-child(2),
+table.casts td:nth-child(2),
+table.casts th:nth-child(3),
+table.casts td:nth-child(3) {
+  text-align: right;
+  width: 5rem;
+}
+
+table.casts th {
+  color: var(--muted);
+  font-weight: 600;
+}

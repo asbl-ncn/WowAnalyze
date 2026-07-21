@@ -13,6 +13,7 @@ from wowanalyze.models import (
     AnalysisResult,
     Difficulty,
     Finding,
+    ObservedPlay,
     ReferenceProfile,
     Target,
     TargetAnalysis,
@@ -66,6 +67,10 @@ async def analyze_targets(
             )
 
         analysis = TargetAnalysis(target=target)
+        # Always surface what the player actually did, reference or not.
+        analysis.observed = ObservedPlay(
+            duration_ms=data.duration_ms, cast_counts=data.cast_counts
+        )
         if profile is None:
             # No reference yet (spec/boss/build not precomputed) — say so, don't guess.
             analysis.findings = []

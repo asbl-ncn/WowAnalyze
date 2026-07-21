@@ -111,10 +111,18 @@ class Finding(BaseModel):
     )
 
 
+class ObservedPlay(BaseModel):
+    """What the Target actually did, shown even before a Reference Profile exists."""
+
+    duration_ms: int
+    cast_counts: dict[str, int] = Field(default_factory=dict)
+
+
 class TargetAnalysis(BaseModel):
     target: Target
     boss_name: str | None = None
     build: BuildCluster | None = None
+    observed: ObservedPlay | None = None
     findings: list[Finding] = Field(default_factory=list)
 
 

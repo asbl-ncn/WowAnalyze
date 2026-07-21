@@ -82,3 +82,17 @@ query ActorTable(
   }
 }
 """
+
+# One Target's casts for one fight, plus that fight's timing (for duration/CPM).
+# The `table` field is a JSON scalar; for dataType Casts each entry is an ability
+# with a `total` cast count.
+ACTOR_CASTS = """
+query ActorCasts($code: String!, $fightId: Int!, $sourceId: Int!) {
+  reportData {
+    report(code: $code) {
+      fights(fightIDs: [$fightId]) { startTime endTime }
+      table(fightIDs: [$fightId], sourceID: $sourceId, dataType: Casts)
+    }
+  }
+}
+"""
