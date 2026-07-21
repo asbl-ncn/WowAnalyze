@@ -135,11 +135,16 @@ class FightSummary(BaseModel):
     difficulty: Difficulty | None = None
     kill: bool
     duration_ms: int
+    participant_ids: list[int] = Field(
+        default_factory=list,
+        description="source ids present in this fight; the UI filters actors by these",
+    )
 
 
 class ActorSummary(BaseModel):
     actor_id: int
     name: str
+    class_name: str | None = None
     spec: str | None = None
     role: Role | None = None
 

@@ -44,6 +44,7 @@ def map_report_summary(code: str, data: dict[str, Any]) -> ReportSummary:
                 difficulty=_DIFFICULTY_BY_ID.get(f.get("difficulty")),
                 kill=bool(f.get("kill")),
                 duration_ms=int(end - start),
+                participant_ids=list(f.get("friendlyPlayers") or []),
             )
         )
 
@@ -53,8 +54,9 @@ def map_report_summary(code: str, data: dict[str, Any]) -> ReportSummary:
             ActorSummary(
                 actor_id=a["id"],
                 name=a.get("name") or "?",
-                # Spec/role need combatantInfo/talent data — a later slice. Name is
-                # enough for the picker; you know which character is yours.
+                # `subType` is the class for players (e.g. "Shaman"). Spec/role need
+                # combatantInfo/talent data — a later slice.
+                class_name=a.get("subType"),
                 spec=None,
                 role=None,
             )

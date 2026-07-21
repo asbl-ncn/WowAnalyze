@@ -53,6 +53,13 @@ export default function App() {
     }
   }
 
+  // Once a pull is picked, only show the characters who were actually in it —
+  // a full report can carry hundreds of players across all fights.
+  const visibleActors =
+    report && fight
+      ? report.actors.filter((a) => fight.participant_ids.includes(a.actor_id))
+      : [];
+
   return (
     <main className="app">
       <header>
@@ -85,9 +92,10 @@ export default function App() {
             <div className="field">
               <label>Pull</label>
               <select
-                onChange={(e) =>
-                  setFight(report.fights[Number(e.target.value)] ?? null)
-                }
+                onChange={(e) => {
+                  setFight(report.fights[Number(e.target.value)] ?? null);
+                  setActor(null); // roster changes with the pull
+                }}
                 defaultValue=""
               >
                 <option value="" disabled>
@@ -95,7 +103,8 @@ export default function App() {
                 </option>
                 {report.fights.map((f, i) => (
                   <option key={f.fight_id} value={i}>
-                    {f.boss_name} — {f.kill ? "Kill" : "Wipe"}
+                    {f.boss_name} · {f.kill ? "Kill" : "Wipe"} ·{" "}
+                    {Math.round(f.duration_ms / 1000)}s
                   </option>
                 ))}
               </select>
@@ -103,18 +112,21 @@ export default function App() {
             <div className="field">
               <label>You (character)</label>
               <select
-                onChange={(e) =>
-                  setActor(report.actors[Number(e.target.value)] ?? null)
+                value={
+                  actor ? String(visibleActors.indexOf(actor)) : ""
                 }
-                defaultValue=""
+                onChange={(e) =>
+                  setActor(visibleActors[Number(e.target.value)] ?? null)
+                }
+                disabled={!fight}
               >
                 <option value="" disabled>
-                  Choose your character…
+                  {fight ? "Choose your character…" : "Pick a pull first"}
                 </option>
-                {report.actors.map((a, i) => (
+                {visibleActors.map((a, i) => (
                   <option key={a.actor_id} value={i}>
                     {a.name}
-                    {a.spec ? ` (${a.spec})` : ""}
+                    {a.class_name ? ` – ${a.class_name}` : ""}
                   </option>
                 ))}
               </select>

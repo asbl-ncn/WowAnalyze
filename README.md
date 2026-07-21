@@ -39,18 +39,27 @@ tests/             pytest
 Backend / engine (Python 3.11+):
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .            # makes `wowanalyze` importable
-cp .env.example .env        # then fill in your WCL credentials
+# 1. create + activate a virtualenv
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 
-# run the API locally
-uvicorn api.index:app --reload --port 8000
+# 2. install the package + dev tools (uvicorn, pytest) in one shot
+pip install -e ".[dev]"              # includes app deps; no separate requirements.txt step
+
+# 3. credentials
+cp .env.example .env                 # Windows: copy .env.example .env  — then fill in WCL creds
+
+# 4. run the API locally (use `python -m uvicorn` — more reliable on Windows PATH)
+python -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000
 
 # discover current-tier encounter IDs, then build reference profiles
 python -m scripts.precompute --list-zones
-python -m scripts.precompute --spec "havoc" --difficulty mythic --boss <encounterID>
+python -m scripts.precompute --spec elemental --difficulty mythic --boss <encounterID>
 ```
+
+> Windows note: if uvicorn fails with `WinError 10013` (socket access forbidden), the
+> port is in a Windows-reserved range — pick another, e.g. `--port 8123`. The Vite dev
+> proxy defaults to `:8000`; adjust `web/vite.config.ts` if you change it.
 
 Frontend:
 

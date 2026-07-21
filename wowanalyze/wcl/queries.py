@@ -18,6 +18,7 @@ query ReportSummary($code: String!) {
         kill
         startTime
         endTime
+        friendlyPlayers
       }
       masterData {
         actors(type: "Player") {

@@ -20,11 +20,13 @@ export interface FightSummary {
   difficulty?: Difficulty | null;
   kill: boolean;
   duration_ms: number;
+  participant_ids: number[];
 }
 
 export interface ActorSummary {
   actor_id: number;
   name: string;
+  class_name?: string | null;
   spec?: string | null;
   role?: Role | null;
 }

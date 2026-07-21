@@ -24,6 +24,7 @@ _SAMPLE = {
                     "kill": False,
                     "startTime": 1000,
                     "endTime": 121000,
+                    "friendlyPlayers": [11],
                 },
                 {
                     "id": 2,
@@ -33,6 +34,7 @@ _SAMPLE = {
                     "kill": True,
                     "startTime": 200000,
                     "endTime": 380000,
+                    "friendlyPlayers": [11, 12],
                 },
             ],
             "masterData": {
@@ -60,9 +62,12 @@ def test_maps_fights_and_actors():
     assert kill.boss_id == 3009
     assert kill.difficulty is Difficulty.mythic
     assert kill.duration_ms == 180000  # 380000 - 200000
+    assert wipe.participant_ids == [11]
+    assert kill.participant_ids == [11, 12]
 
     assert summary.actors[0].name == "Zaphod"
     assert summary.actors[0].actor_id == 11
+    assert summary.actors[0].class_name == "Shaman"
 
 
 def test_missing_report_raises():
