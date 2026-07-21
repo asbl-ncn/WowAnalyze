@@ -65,16 +65,24 @@ def aggregate_cluster(
         present = sum(1 for d in cluster_data if d.cast_counts.get(ability, 0) > 0)
         if n and present * 2 < n:
             continue
-        med, p25, p75 = _median([float(d.cast_counts.get(ability, 0)) for d in cluster_data])
+        # Store casts-per-minute, not raw totals, so pulls of different lengths compare
+        # fairly (a longer kill naturally has more casts).
+        rates = [
+            (d.cast_counts.get(ability, 0) / (d.duration_ms / 60000))
+            if d.duration_ms
+            else 0.0
+            for d in cluster_data
+        ]
+        med, p25, p75 = _median(rates)
         metrics.append(
             ReferenceMetric(
                 key=f"cast_count:{ability}",
                 dimension=Dimension.cooldowns,  # TODO: tag major CDs vs rotational fillers
-                label=f"{ability} casts",
+                label=f"{ability}",
                 median=med,
                 p25=p25,
                 p75=p75,
-                unit="count",
+                unit="per-min",
             )
         )
 

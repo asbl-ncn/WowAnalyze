@@ -6,6 +6,7 @@ that wipes raids. Diffs your damage-taken profile against players who survived.
 
 from __future__ import annotations
 
+from wowanalyze.abilities import classify_ability
 from wowanalyze.diff.base import ActorFightData, DiffDimension
 from wowanalyze.models import Dimension, Finding, ReferenceProfile, Severity
 
@@ -17,6 +18,33 @@ class SurvivalDimension(DiffDimension):
         self, data: ActorFightData, profile: ReferenceProfile
     ) -> list[Finding]:
         findings: list[Finding] = []
+
+        # Defensives the top parses used but you didn't — correct framing (survival,
+        # not throughput). Reads cast_count metrics regardless of their stored tag.
+        for metric in profile.metrics:
+            if not metric.key.startswith("cast_count:"):
+                continue
+            ability = metric.key.split(":", 1)[1]
+            if classify_ability(ability) != "defensive":
+                continue
+            if metric.median <= 0:
+                continue
+            if data.cast_counts.get(ability, 0) == 0:
+                findings.append(
+                    Finding(
+                        dimension=self.dimension,
+                        severity=Severity.minor,
+                        title=f"No {ability} used",
+                        detail=(
+                            f"Top parses used {ability} on this fight; you didn't cast "
+                            f"it. Check whether a defensive was available for the big hits."
+                        ),
+                        your_value=0.0,
+                        reference_value=None,
+                        unit="count",
+                        impact_score=2.0,
+                    )
+                )
 
         # A death is always worth surfacing — it's the most expensive mistake there is.
         if data.deaths > 0:

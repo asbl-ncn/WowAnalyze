@@ -10,8 +10,9 @@ from wowanalyze.models import BuildCluster, Difficulty
 from wowanalyze.reference.builder import aggregate_cluster, build_profile
 
 
+# 60s pulls, so casts-per-minute equals raw counts and the medians stay readable.
 def _fd(**casts: int) -> ActorFightData:
-    return ActorFightData(duration_ms=200_000, cast_counts=dict(casts))
+    return ActorFightData(duration_ms=60_000, cast_counts=dict(casts))
 
 
 def test_aggregate_medians():
@@ -21,7 +22,9 @@ def test_aggregate_medians():
         _fd(**{"Lava Burst": 32, "Stormkeeper": 3}),
     ]
     by_key = {m.key: m for m in aggregate_cluster(cluster)}
+    # Stored as per-minute; at 60s pulls that equals the raw counts.
     assert by_key["cast_count:Lava Burst"].median == 32
+    assert by_key["cast_count:Lava Burst"].unit == "per-min"
     assert by_key["cast_count:Stormkeeper"].median == 2
 
 
