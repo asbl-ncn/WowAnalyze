@@ -19,6 +19,7 @@ import asyncio
 import json
 from datetime import datetime, timezone
 
+from wowanalyze.builds import build_label, detect_build
 from wowanalyze.models import BuildCluster, Difficulty
 from wowanalyze.reference.builder import build_profile
 from wowanalyze.reference.store import PROVISIONAL_BUILD_KEY, save_profile
@@ -33,6 +34,9 @@ from wowanalyze.wcl.queries import (
 
 # WCL difficulty ids (Mythic raid = 5). Confirm against worldData if the API changes.
 _DIFFICULTY_ID = {Difficulty.normal: 3, Difficulty.heroic: 4, Difficulty.mythic: 5}
+
+# Minimum parses to trust a per-build cluster on its own.
+_MIN_CLUSTER = 5
 
 
 def _resolve_spec(spec: str) -> tuple[str, str]:
@@ -167,23 +171,39 @@ async def build_reference(
         print("  resolved 0 parses; skipping")
         return
 
-    build = BuildCluster(
-        key=PROVISIONAL_BUILD_KEY,
-        hero_talent="mixed",
-        label="All top parses (provisional — not yet build-segmented)",
-    )
-    profile = build_profile(
-        spec=spec,
-        boss_id=boss_id,
-        boss_name=encounter_name or f"Boss {boss_id}",
-        difficulty=difficulty,
-        build=build,
-        patch="unknown",
-        generated_at=generated_at,
-        cluster_data=cluster_data,
-    )
-    path = save_profile(profile)
-    print(f"  saved {len(cluster_data)} parses -> {path} ({len(profile.metrics)} metrics)")
+    def _save(build_key: str, data_list: list) -> None:
+        build = BuildCluster(
+            key=build_key, hero_talent=build_key, label=build_label(build_key)
+        )
+        profile = build_profile(
+            spec=spec,
+            boss_id=boss_id,
+            boss_name=encounter_name or f"Boss {boss_id}",
+            difficulty=difficulty,
+            build=build,
+            patch="unknown",
+            generated_at=generated_at,
+            cluster_data=data_list,
+        )
+        path = save_profile(profile)
+        print(
+            f"  saved [{build_key}] {len(data_list)} parses, "
+            f"{len(profile.metrics)} metrics -> {path}"
+        )
+
+    # Always the blended fallback, then per-build clusters that are big enough.
+    _save(PROVISIONAL_BUILD_KEY, cluster_data)
+
+    groups: dict[str, list] = {}
+    for d in cluster_data:
+        groups.setdefault(detect_build(spec, d.cast_counts), []).append(d)
+    for build_key, ds in groups.items():
+        if build_key == PROVISIONAL_BUILD_KEY:
+            continue
+        if len(ds) < _MIN_CLUSTER:
+            print(f"  [{build_key}] only {len(ds)} parses (<{_MIN_CLUSTER}), skipped")
+            continue
+        _save(build_key, ds)
 
 
 async def build_seeds(top: int) -> None:

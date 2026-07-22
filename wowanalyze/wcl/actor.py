@@ -31,19 +31,33 @@ def map_actor_casts(data: dict[str, Any]) -> ActorFightData:
         difficulty_id = f.get("difficulty")
 
     cast_counts: dict[str, int] = {}
-    table = report.get("table") or {}
-    for entry in (table.get("data") or {}).get("entries") or []:
+    casts_table = report.get("casts") or report.get("table") or {}
+    for entry in (casts_table.get("data") or {}).get("entries") or []:
         name = entry.get("name")
         if not name:
             continue
         # In a Casts table, `total` is the number of casts of that ability.
         cast_counts[name] = int(entry.get("total") or 0)
 
+    # Debuffs YOU applied, keyed by uptime in ms (dot maintenance etc.). The Debuffs
+    # table nests entries under "auras" (fall back to "entries"); uptime is "totalUptime".
+    debuff_uptime_ms: dict[str, int] = {}
+    debuffs_table = report.get("debuffs") or {}
+    debuff_data = debuffs_table.get("data") or {}
+    for aura in debuff_data.get("auras") or debuff_data.get("entries") or []:
+        name = aura.get("name")
+        uptime = aura.get("totalUptime")
+        if uptime is None:
+            uptime = aura.get("uptime")
+        if name and uptime:
+            debuff_uptime_ms[name] = int(uptime)
+
     return ActorFightData(
         duration_ms=duration_ms,
         boss_id=boss_id,
         difficulty_id=difficulty_id,
         cast_counts=cast_counts,
+        debuff_uptime_ms=debuff_uptime_ms,
     )
 
 

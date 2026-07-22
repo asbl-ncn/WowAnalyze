@@ -41,6 +41,16 @@ def test_rare_ability_is_dropped():
     assert "cast_count:Silvermoon Health Potion" not in keys
 
 
+def test_uptime_metric_from_debuffs():
+    cluster = [
+        ActorFightData(duration_ms=200_000, debuff_uptime_ms={"Flame Shock": 190_000}),
+        ActorFightData(duration_ms=200_000, debuff_uptime_ms={"Flame Shock": 180_000}),
+    ]
+    by_key = {m.key: m for m in aggregate_cluster(cluster)}
+    assert "uptime:Flame Shock" in by_key
+    assert abs(by_key["uptime:Flame Shock"].median - 0.925) < 0.01  # (0.95 + 0.90) / 2
+
+
 def test_build_profile_wraps_metrics():
     profile = build_profile(
         spec="shaman-elemental",

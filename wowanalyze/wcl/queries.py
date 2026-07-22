@@ -101,7 +101,8 @@ query ActorCasts($code: String!, $fightId: Int!, $sourceId: Int!) {
         encounterID
         difficulty
       }
-      table(fightIDs: [$fightId], sourceID: $sourceId, dataType: Casts)
+      casts: table(fightIDs: [$fightId], sourceID: $sourceId, dataType: Casts)
+      debuffs: table(fightIDs: [$fightId], sourceID: $sourceId, dataType: Debuffs)
     }
   }
 }

@@ -106,7 +106,30 @@ def aggregate_cluster(
             )
         )
 
-    # TODO(reference): uptime:<aura> (Dimension.uptime) and survival metrics.
+    # Debuff uptime (dots you maintain) -> uptime metrics, as a fraction of the fight.
+    auras = {a for d in cluster_data for a in d.debuff_uptime_ms}
+    for aura in sorted(auras):
+        present = sum(1 for d in cluster_data if d.debuff_uptime_ms.get(aura, 0) > 0)
+        if n and present * 2 < n:
+            continue
+        fracs = [
+            (d.debuff_uptime_ms.get(aura, 0) / d.duration_ms) if d.duration_ms else 0.0
+            for d in cluster_data
+        ]
+        med, p25, p75 = _median(fracs)
+        metrics.append(
+            ReferenceMetric(
+                key=f"uptime:{aura}",
+                dimension=Dimension.uptime,
+                label=f"{aura} uptime",
+                median=med,
+                p25=p25,
+                p75=p75,
+                unit="fraction",
+            )
+        )
+
+    # TODO(reference): survival metrics (avoidable damage taken profile).
     return metrics
 
 

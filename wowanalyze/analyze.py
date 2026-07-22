@@ -18,6 +18,7 @@ from wowanalyze.models import (
     Target,
     TargetAnalysis,
 )
+from wowanalyze.builds import detect_build
 from wowanalyze.reference.store import PROVISIONAL_BUILD_KEY, load_profile
 
 # WCL raid difficulty ids.
@@ -61,12 +62,22 @@ async def analyze_targets(
 
         profile = None
         if target.spec and data.boss_id:
+            diff = _DIFFICULTY_BY_ID.get(data.difficulty_id) or difficulty
+            build_key = detect_build(target.spec, data.cast_counts)
             profile = load_profile(
                 spec=target.spec,
-                difficulty=_DIFFICULTY_BY_ID.get(data.difficulty_id) or difficulty,
+                difficulty=diff,
                 boss_id=data.boss_id,
-                build_key=PROVISIONAL_BUILD_KEY,
+                build_key=build_key,
             )
+            # Fall back to the blended profile if your build isn't segmented yet.
+            if profile is None and build_key != PROVISIONAL_BUILD_KEY:
+                profile = load_profile(
+                    spec=target.spec,
+                    difficulty=diff,
+                    boss_id=data.boss_id,
+                    build_key=PROVISIONAL_BUILD_KEY,
+                )
 
         analysis = TargetAnalysis(target=target)
         # Always surface what the player actually did, reference or not.

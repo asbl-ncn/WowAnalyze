@@ -6,6 +6,7 @@ uptime. The classic "your DoT fell off" analysis.
 
 from __future__ import annotations
 
+from wowanalyze.abilities import classify_ability
 from wowanalyze.diff.base import ActorFightData, DiffDimension
 from wowanalyze.models import Dimension, Finding, ReferenceProfile, Severity
 
@@ -29,6 +30,8 @@ class UptimeDimension(DiffDimension):
                 continue
 
             aura = metric.key.split(":", 1)[1]
+            if classify_ability(aura) != "dps":
+                continue
             yours = combined.get(aura, 0) / data.duration_ms  # fraction 0..1
             expected = metric.median
 
